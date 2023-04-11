@@ -27,5 +27,7 @@ $ docker tag cn2f/oai-enb oai-enb:latest
 
 ### Building Dokcer Images
 
+To build docker images of the core network, we used [this](https://github.com/OPENAIRINTERFACE/openair-epc-fed) repository. There is a complete dockumentation on how to build different modules. It also suggests two `MME` modules and we used `magma-mme` in our testbed. 
 
+To build docker images of the Radio Access Network (RAN), we used [this](https://gitlab.eurecom.fr/oai/openairinterface5g) repository in the eurecom GitLab.
 
