@@ -1,0 +1,2 @@
+[remote-hosts-group]
+{IP} ansible_ssh_pass='' ansible_ssh_user=''

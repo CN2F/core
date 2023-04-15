@@ -1,0 +1,1 @@
+sudo ip route add 192.168.61.128/26 via 10.0.0.10 dev enp0s31f6

@@ -1,0 +1,1 @@
+sudo ip addr add 10.0.0.30/24 brd + dev enp0s31f6 label enp0s31f6:1

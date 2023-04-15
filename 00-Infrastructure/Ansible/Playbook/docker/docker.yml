@@ -1,0 +1,72 @@
+---
+- name: Install certain python modules for docker
+  pip:
+    name: "{{ item.name }}"
+    version: "{{ item.version }}"
+    state: present
+    executable: pip3
+  with_items:
+  - { name: docker-py, version: 1.10.6 }
+  
+- name: Install docker
+  apt:
+    name: docker.io
+    state: latest
+
+- name: Install docker-compose 
+  get_url: 
+    url : https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64
+    dest: /usr/local/bin/docker-compose
+    mode: 'u+x,g+x'
+    
+- name: Set permissions for docker-compose 
+  shell: 'chmod +x /usr/local/bin/docker-compose'
+
+- name: Set daemon.json
+  copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+
+- name: Restart docker service
+  systemd:
+    name: docker
+    daemon_reload: true
+    state: restarted
+    enabled: true
+
+- name: Create "docker" group
+  group:
+    name: docker
+    state: present
+
+- name: Add remote user to "docker" group
+  user:
+    name: {{ username }}
+    group: docker
+    append: yes
+
+- name: Pulling image {{ item.name }}
+  vars:
+    registry_address: "cn2f"
+    containers:
+      - name: '{{registry_address}}/cassandra'
+        tag: cassandra:2.1
+      - name: '{{registry_address}}/oai-hss'
+        tag: oai-hss:production
+      - name: '{{registry_address}}/magma-mme'
+        tag: magma-mme:master
+      - name: '{{registry_address}}/oai-spgwc'
+        tag: oai-spgwc:production
+      - name: '{{registry_address}}/oai-spgwu-tiny'
+        tag: oai-spgwu-tiny:production
+      - name: '{{registry_address}}/oai-enb'
+        tag: oai-enb:fixed
+  docker_image:
+    name: "{{ item.name }}"
+    repository: "{{ item.tag }}"
+    source: pull
+    pull: true
+  with_items:
+   - '{{containers}}'
+  
+    

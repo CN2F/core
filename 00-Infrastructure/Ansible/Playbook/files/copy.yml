@@ -1,0 +1,15 @@
+---
+- name: Copy useful bash scripts
+  vars:
+    files:
+      - name: connect.sh
+      - name: disconnect.sh
+      - name: ip.bash
+      - name: route.bash
+      - name: for.sh
+  copy:
+    src: "{{ item.name }}"
+    dest: /home/{{ username }}
+    mode: 0777
+  with_items:
+    - '{{files}}'

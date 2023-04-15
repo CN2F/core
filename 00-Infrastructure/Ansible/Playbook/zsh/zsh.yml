@@ -1,0 +1,48 @@
+---
+- name: Install dependencies
+  become: yes
+  package:
+    name: zsh
+    state: present
+
+- name: Clone oh-my-zsh for users
+  tags:
+    # Suppress warning: [ANSIBLE0006] git used in place of git module
+    # Git module doesn't allow us to set `core.autocrlf=input`.
+    - skip_ansible_lint
+  become: yes
+  become_user: {{ username }}
+  command: 'git clone --depth=1 https://github.com/ohmyzsh/ohmyzsh.git .oh-my-zsh'
+  args:
+    chdir: '~{{ username }}'
+    creates: '~{{ username }}/.oh-my-zsh'
+  loop_control:
+    loop_var: user
+    label: {{ username }}
+
+- name: Set permissions of oh-my-zsh for users
+  become: yes
+  file:
+    path: '/home/{{ username }}/.oh-my-zsh'
+    mode: 'go-w'
+    recurse: yes
+  loop_control:
+    loop_var: user
+    label: {{ username }}
+
+
+
+- name: Enable auto-suggestion 
+  command: 'git clone https://github.com/zsh-users/zsh-autosuggestions /home/{{ username }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions'
+
+- name: Copy zshrc
+  copy:
+    src: zshrc
+    dest: /home/{{ username }}/.zshrc
+    mode: 0644
+    
+- name: Set default shell for users
+  become: yes
+  user:
+    name: {{ username }}
+    shell: /bin/zsh

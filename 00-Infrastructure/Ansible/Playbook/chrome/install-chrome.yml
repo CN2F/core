@@ -1,0 +1,19 @@
+# tasks file for  installing googlechrome on ubuntu
+- name: Debian/Ubuntu Family | Add gpg signing key for google-chrome-stable
+  ansible.builtin.apt_key:
+    url: "https://dl.google.com/linux/linux_signing_key.pub"
+    state: present
+
+- name: Debian/Ubuntu Family | Adding repository googlechrome_repo_debian
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main"
+    state: present
+    filename: "deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main"
+    update_cache: yes
+
+- name: Debian/Ubuntu Family | Installing google-chrome-stable
+  ansible.builtin.apt:
+    name: google-chrome-stable
+    state: present
+    force_apt_get: yes
+    update_cache: yes

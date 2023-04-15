@@ -1,0 +1,61 @@
+---
+- name: Install Required Packages
+  hosts: remote-hosts-group
+  remote_user: root
+  become: true 
+  vars:
+    username: ion
+
+  tasks:
+    - name: Update and Upgrade apt Packages 
+      apt:
+        upgrade: yes
+        update_cache: yes
+        cache_valid_time: 86400
+        
+    - name: Install packages from apt repository
+      apt:
+        name:
+          - sl
+          - cmatrix
+          - vim
+          - tmux
+          - git
+          - curl
+          - netcat
+          - net-tools
+          - i7z
+          - wget
+          - wireshark
+          - python3-pip
+          - linux-headers-lowlatency
+          - linux-image-lowlatency
+   
+    - name: Install vscode
+      snap:
+        name: code
+        classic: yes
+   
+    - name: Install insomnia
+      snap:
+        name: insomnia
+        classic: yes       
+  
+    - name: Install Google Chrome
+      import_tasks: ./chrome/install-chrome.yml
+      when: ansible_os_family == "Debian"
+
+    - name: Install and Configure Docker
+      import_tasks: ./docker/docker.yml
+
+    - name: Install and configure ZSH
+      import_tasks: ./zsh/zsh.yml
+
+    - name: Update grub
+      import_tasks: ./grub/grub.yml
+
+    - name: Copy some files
+      import_tasks: ./files/copy.yml
+      
+    - name: Reboot the machine
+      shell: "sleep 5 && reboot"

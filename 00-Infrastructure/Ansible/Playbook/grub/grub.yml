@@ -1,0 +1,8 @@
+---
+- name: Change grub file
+  copy:
+    src: grub
+    dest: /etc/default/grub
+
+- name: Update-grub
+  shell: update-grub2
