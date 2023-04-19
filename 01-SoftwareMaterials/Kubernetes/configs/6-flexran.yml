@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flexran
+  namespace: ion
+spec:
+  selector:
+    matchLabels:
+      app: flexran
+  template:
+    metadata:
+      labels:
+        app: flexran
+      annotations:
+        "cni.projectcalico.org/ipAddrs": "[\"192.168.0.200\"]"
+    spec:
+      containers:
+      - name: flexran
+        image: flexran
+        imagePullPolicy: Never
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        volumeMounts:
+          - mountPath: /sys/fs/cgroup
+            readOnly: true
+            name: fl
+        ports:
+        - containerPort: 9999
+        - containerPort: 2210
+        - containerPort: 5530
+        - containerPort: 6630
+      volumes:
+        - name: fl
+          hostPath:
+            path: /sys/fs/cgroup
+      nodeSelector:
+        environment: rru

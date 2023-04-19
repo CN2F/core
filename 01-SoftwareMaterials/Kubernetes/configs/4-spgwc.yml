@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spgwc
+  namespace: ion
+spec:
+  selector:
+    matchLabels:
+      app: spgwc
+  template:
+    metadata:
+      annotations:
+        "cni.projectcalico.org/ipAddrs": "[\"192.168.0.15\"]"
+      labels:
+        app: spgwc
+    spec:
+      containers:
+      - name: spgwc
+        image: oai-spgwc:production
+        imagePullPolicy: Never
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        env:
+          - name: TZ
+            value: "Europe/Paris"
+          - name: SGW_INTERFACE_NAME_FOR_S11
+            value: "eth0"
+          - name: PGW_INTERFACE_NAME_FOR_SX
+            value: "eth0"
+          - name: DEFAULT_DNS_IPV4_ADDRESS
+            value: 8.8.8.8
+          - name: DEFAULT_DNS_SEC_IPV4_ADDRESS
+            value: 8.8.4.4
+          - name: PUSH_PROTOCOL_OPTION
+            value: "true"
+          - name: APN_NI_1
+            value: "oai.ipv4"
+          - name: APN_NI_2
+            value: "oai2.ipv4"
+          - name: DEFAULT_APN_NI_1
+            value: "oai.ipv4"
+          - name: UE_IP_ADDRESS_POOL_1
+            value: "12.1.1.2 - 12.1.1.254"
+          - name: UE_IP_ADDRESS_POOL_2
+            value: "12.0.0.2 - 12.0.0.254"
+          - name: UE_MTU_IPV4
+            value: "1500"
+          - name: MCC
+            value: "222"
+          - name: MNC
+            value: "01"
+          - name: MNC03
+            value: "001"
+          - name: TAC
+            value: "1"
+          - name: GW_ID
+            value: "1"
+          - name: REALM
+            value: "openairinterface.org"
+        ports:
+        - containerPort: 2123
+        - containerPort: 8805
+        - containerPort: 9081
+      initContainers:
+        - name: mmechecker
+          image: subfuzion/netcat
+          imagePullPolicy: Never
+          command: ['sh', '-c', "for i in {1..100}; do sleep 10; if nc -z 192.168.0.130 3870; then exit 0; fi; done; exit 1"]
+      nodeSelector:
+        environment: core

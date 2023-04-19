@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cassandra
+  namespace: ion
+spec:
+  selector:
+    matchLabels:
+      app: cassandra
+  template:
+    metadata:
+      labels:
+        app: cassandra
+      annotations:
+        "cni.projectcalico.org/ipAddrs": "[\"192.168.0.170\"]"
+    spec:
+      containers:
+      - name: cassandra-db
+        image: cassandra:2.1
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - "/bin/bash"
+              - "-c"
+              - >
+               sleep 30 && cqlsh --file /home/oai_db.cql 127.0.0.1
+        imagePullPolicy: Never
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        env:
+          - name: CASSANDRA_CLUSTER_NAME
+            value: "OAI HSS Cluster"
+          - name: CASSANDRA_ENDPOINT_SNITCH
+            value: "GossipingPropertyFileSnitch"
+        ports:
+        - containerPort: 9042
+        volumeMounts:
+          - mountPath: /var/lib/cassandra
+            name: dbvol
+          - mountPath: /home
+            name: initvol
+      volumes:
+        - name: dbvol
+          hostPath:
+            path: /home/ion/db
+        - name: initvol
+          hostPath:
+            path: /home/ion/db_init
+      nodeSelector:
+        environment: core
