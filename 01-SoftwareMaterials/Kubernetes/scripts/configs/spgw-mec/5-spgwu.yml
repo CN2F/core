@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spgwu
+  namespace: ion
+spec:
+  selector:
+    matchLabels:
+      app: spgwu
+  template:
+    metadata:
+      labels:
+        app: spgwu
+      annotations:
+        "cni.projectcalico.org/ipAddrs": "[\"192.168.0.226\"]"
+    spec:
+      containers:
+      - name: spgwu
+        image: oai-spgwu-tiny:production
+        imagePullPolicy: Never
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        env:
+          - name: TZ
+            value: "Europe/Paris"
+          - name: PID_DIRECTORY
+            value: "/var/run"
+          - name: INSTANCE
+            value: "1"
+          - name: SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP
+            value: "eth0"
+          - name: PGW_INTERFACE_NAME_FOR_SGI
+            value: "eth0"
+          - name: SGW_INTERFACE_NAME_FOR_SX
+            value: "eth0"
+          - name: SPGWC0_IP_ADDRESS
+            value: 192.168.0.15
+          - name: NETWORK_UE_IP
+            value: "12.1.1.0/24"
+          - name: NETWORK_UE_NAT_OPTION
+            value: "yes"
+          - name: MCC
+            value: "222"
+          - name: MNC
+            value: "01"
+          - name: MNC03
+            value: "001"
+          - name: TAC
+            value: "1"
+          - name: GW_ID
+            value: "1"
+          - name: REALM
+            value: "openairinterface.org"
+        
+        ports:
+        - containerPort: 2152
+        - containerPort: 8805
+      initContainers:
+        - name: spgwchecker
+          image: subfuzion/netcat
+          imagePullPolicy: Never
+          command: ['sh', '-c', "for i in {1..100}; do sleep 10; if nc -z 192.168.0.15 9081; then exit 0; fi; done; exit 1"]
+      nodeSelector:
+        environment: rru

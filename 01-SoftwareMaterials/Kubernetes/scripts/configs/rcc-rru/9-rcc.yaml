@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rcc
+  namespace: ion
+spec:
+  selector:
+    matchLabels:
+      app: rcc
+  template:
+    metadata:
+      labels:
+        app: rcc
+      annotations:
+        "cni.projectcalico.org/ipAddrs": "[\"192.168.0.113\"]"
+    spec:
+      containers:
+      - name: rcc
+        image: seyed2
+        securityContext:
+          privileged: true
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: USE_VOLUMED_CONF
+            value: "1"
+        volumeMounts:
+          - mountPath: /opt/oai-enb/etc/mounted.conf
+            name: rccconf
+            subPath: mounted.conf
+        ports:
+        - containerPort: 2152
+        - containerPort: 22100
+        - containerPort: 36412
+        - containerPort: 36422
+        - containerPort: 50000
+        - containerPort: 50001
+      initContainers:
+        - name: mmechecker
+          image: subfuzion/netcat
+          imagePullPolicy: Never
+          command: ['sh', '-c', "for i in {1..100}; do sleep 10; if nc -z 192.168.0.130 3870; then exit 0; fi; done; exit 1"]
+      volumes:
+        - name: rccconf
+          configMap:
+            name: rcccfg
+      nodeSelector:
+        environment: rcc

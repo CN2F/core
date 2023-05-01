@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: enb
+  namespace: ion
+spec:
+  selector:
+    matchLabels:
+      app: enb
+  template:
+    metadata:
+      labels:
+        app: enb
+      annotations:
+        "cni.projectcalico.org/ipAddrs": "[\"192.168.0.234\"]"
+    spec:
+      containers:
+      - name: enb
+        image: seyed3
+        securityContext:
+          privileged: true
+        imagePullPolicy: Never
+        env:
+          - name: UHD_IMAGES_DIR
+            value: "/usr/local/share"
+          - name: USE_VOLUMED_CONF
+            value: "1"
+        volumeMounts:
+          - mountPath: /dev/bus/usb
+            name: usbbus
+          - mountPath: /opt/oai-enb/etc/mounted.conf
+            name: enbconf
+            subPath: mounted.conf
+          - mountPath: /usr/local/share
+            name: uhdimg
+        ports:
+        - containerPort: 2152
+        - containerPort: 22100
+        - containerPort: 36412
+        - containerPort: 36422
+        - containerPort: 50000
+        - containerPort: 50001
+      initContainers:
+        - name: mmechecker
+          image: subfuzion/netcat
+          imagePullPolicy: Never
+          command: ['sh', '-c', "for i in {1..100}; do sleep 10; if nc -z 192.168.0.130 3870; then exit 0; fi; done; exit 1"]
+        # - name: flexranchecker
+        #   image: subfuzion/netcat
+        #   imagePullPolicy: Never
+        #   command: ['sh', '-c', "for i in {1..100}; do sleep 10; if nc -z 192.168.0.200 2210; then exit 0; fi; done; exit 1"]
+      volumes:
+        - name: usbbus
+          hostPath:
+            path: /dev/bus/usb
+        - name: uhdimg
+          hostPath:
+            path: /home/ion/uhd
+        - name: enbconf
+          configMap:
+            name: enbcfg
+      nodeSelector:
+        environment: rru

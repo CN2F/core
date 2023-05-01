@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mme
+  namespace: ion
+spec:
+  selector:
+    matchLabels:
+      app: mme
+  template:
+    metadata:
+      labels:
+        app: mme
+      annotations:
+        "cni.projectcalico.org/ipAddrs": "[\"192.168.0.130\"]"
+    spec:
+      hostname: mme
+      containers:
+      - name: magma-mme
+        image: magma-mme:master
+        imagePullPolicy: Never
+        resources:
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        securityContext:
+          privileged: true
+        ports:
+        - containerPort: 3870
+        - containerPort: 5870
+        - containerPort: 2123
+        volumeMounts:
+          - mountPath: /magma-mme/etc/mme_fd.conf.tmplt
+            name: mmevolcfg
+            subPath: mme_fd.conf.tmplt
+          - mountPath: /magma-mme/etc/mme.conf
+            name: mmevolcfg
+            subPath: mme.conf
+          - mountPath: /magma-mme/scripts/mme-cfg.sh
+            name: mmevolcfg
+            subPath: mme-cfg.sh
+        command:
+          - "bash"
+          - "-c"
+          - "cd /magma-mme/scripts; ./mme-cfg.sh"
+        env:
+          - name: TZ
+            value: "Europe/Paris"
+          - name: REALM
+            value: "openairinterface.org"
+          - name: PREFIX
+            value: "/openair-mme/etc"
+          - name: HSS_HOSTNAME
+            value: "hss"
+          - name: HSS_FQDN
+            value: "hss.openairinterface.org"
+          - name: HSS_REALM
+            value: "openairinterface.org"
+          - name: MME_FQDN
+            value: "mme.openairinterface.org"
+          - name: FEATURES
+            value: "mme_oai"
+      initContainers:
+        - name: hsschecker
+          image: subfuzion/netcat
+          imagePullPolicy: Never
+          command:
+            - 'sh'
+            - '-c'
+            - 'for i in {1..100}; do sleep 10; if nc -z 192.168.0.219 3868; then exit 0; fi; done; exit 1'
+      volumes:
+        - name: mmevolcfg
+          configMap:
+            name: "mmecfg"
+            defaultMode: 0777
+      nodeSelector:
+        environment: core

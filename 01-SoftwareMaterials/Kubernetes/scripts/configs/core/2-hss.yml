@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hss
+  namespace: ion
+spec:
+  selector:
+    matchLabels:
+      app: hss
+  template:
+    metadata:
+      labels:
+        app: hss
+      annotations:
+        "cni.projectcalico.org/ipAddrs": "[\"192.168.0.219\"]"
+    spec:
+      containers:
+      - name: hss
+        image: oai-hss:production
+        imagePullPolicy: Never
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        env:
+          - name: TZ
+            value: "Europe/Paris"
+          - name: REALM
+            value: "openairinterface.org"
+          - name: HSS_FQDN
+            value: "hss.openairinterface.org"
+          - name: PREFIX
+            value: "/openair-hss/etc"
+          - name: cassandra_Server_IP
+            value: 192.168.0.170
+          - name: OP_KEY
+            value: "1006020f0a478bf6b699f15c062e42b3"
+          - name: LTE_K
+            value: "fec86ba6eb707ed08905757b1bb44b8f"
+          - name: APN1
+            value: "oai.ipv4"
+          - name: APN2
+            value: "oai2.ipv4"
+          - name: FIRST_IMSI
+            value: "222010100001120"
+          - name: NB_USERS
+            value: "30"
+        ports:
+        - containerPort: 9042
+        - containerPort: 5868
+        - containerPort: 3868
+      initContainers:
+        - name: dbchecker
+          image: subfuzion/netcat
+          imagePullPolicy: Never
+          command: ['sh', '-c', "for i in {1..100}; do sleep 10; if nc -z 192.168.0.170 9042; then exit 0; fi; done; exit 1"]
+      nodeSelector:
+        environment: core
