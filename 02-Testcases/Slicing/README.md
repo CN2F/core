@@ -1,7 +1,7 @@
 # Slicing
 
 ## Topology
-## Implement
+![CC](./figs/RANSlicing.png)
 ## Results
  - Scenarion 1:
 
