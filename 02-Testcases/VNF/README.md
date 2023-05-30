@@ -6,8 +6,8 @@
 
 | Bandwidth (mb/s) | Delay (ms) | Bit Rate (mb/s) | Ping (ms) |
 | --- | --- | --- | --- |
-| 10 | 0 | 1.9 | - |
-| 5 | 50 | 0.573 | 120 |
+| 10 | 0 | 1.9 | 200 |
+| 5 | 50 | 0.52 | 340 |
 
 ## Mobile Edge Computing (MEC)
 ### Topology
@@ -16,5 +16,5 @@
 
 |   Bandwidth (mb/s) | Delay (ms) | Bit Rate (mb/s) | Ping (ms) |
 | --- | --- | --- | --- |
-|                  10|           0|             1.9|          -|
+|                  10|           0|             1.9|        200|
 |                   5|          50|             1.9|        340|
