@@ -46,10 +46,10 @@ nodes:
     role: [worker]
     labels:
       environment: rru
- services:
-   kube-controller:
-     cluster_cidr: 10.233.0.0/18
-     service_cluster_ip_range: 10.233.64.0/18
+services:
+  kube-controller:
+    cluster_cidr: 10.233.0.0/18
+    service_cluster_ip_range: 10.233.64.0/18
 network:
   plugin: calico
 ```
